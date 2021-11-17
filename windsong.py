@@ -29,6 +29,10 @@ def clean(chord):
     return "".join(sorted(set(chord), key=lambda c: ORDER[c]))
 
 
+def in_range(note):
+    return KEY_RANGE.start <= note.note <= KEY_RANGE.stop
+
+
 def is_major(note):
     return (note.note % 12) in C_MAJOR
 
@@ -83,7 +87,7 @@ class Part:
                 bars[-1].chords.append("".join(chord))
                 chord.clear()
 
-            if not is_major(event):
+            if not is_major(event) or (not in_range(event) and not adjust):
                 _log.info(f"{event} is a sharp/flat")
                 chord.append("-")
 
