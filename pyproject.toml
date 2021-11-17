@@ -1,0 +1,31 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "windsong"
+author = "Ong Yong Xin"
+author-email = "ongyongxin2020+github@gmail.com"
+home-page = "https://github.com/ongyx/windsong"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+description-file = "README.md"
+requires = [
+    "mido>=1.2.9",
+]
+requires-python = ">=3.6"
+
+[tool.flit.metadata.requires-extra]
+test = [
+    "pytest>=6.2.2"
+]
+
+[tool.flit.scripts]
+windsong = "windsong:main"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-rP"
