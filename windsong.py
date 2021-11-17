@@ -7,7 +7,7 @@ import math
 
 import mido  # type: ignore
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 # the C major scale key positions relative to C.
 C_MAJOR = [0, 2, 4, 5, 7, 9, 11]
