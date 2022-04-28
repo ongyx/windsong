@@ -35,6 +35,7 @@ If an error occurs, please open an issue, run `windsong --debug <midi-file>` and
 Some restrictions apply due to limitations of the Genshin Impact instruments themselves:
 
 - Only notes in the C major scale (C, D, E, F, G, A, B) can be played. No sharps or flats (yet).
+  However, you can transpose notes with the `-t` option.
 - Notes must be between C3 and B5.
 
 Any invalid notes are replaced with a dash `-`.

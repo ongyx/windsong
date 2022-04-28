@@ -7,7 +7,7 @@ import math
 
 import mido  # type: ignore
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 # the C major scale key positions relative to C.
 C_MAJOR = [0, 2, 4, 5, 7, 9, 11]
@@ -58,10 +58,11 @@ class Bar:
 
 
 class Part:
-    def __init__(self, events: mido.MidiTrack, tpb: int):
+    def __init__(self, events: mido.MidiTrack, tpb: int, transpose: int):
         self.events = events
         self.tpb = tpb
         self.sig = 0
+        self.transpose = transpose
 
     def parse(self, adjust=False):
         clock_prev = 0
@@ -81,14 +82,17 @@ class Part:
                 continue
 
             # if the delta time between the previous and current event hasen't changed,
-            # they are playing simultaniously
+            # they are playing simultaneously
             # once the time increases, a new chord is created
             if clock != clock_prev:
                 bars[-1].chords.append("".join(chord))
                 chord.clear()
 
+            if self.transpose:
+                event.note += self.transpose
+
             if not is_major(event) or (not in_range(event) and not adjust):
-                _log.info(f"{event} is a sharp/flat")
+                _log.info(f"{event} is a sharp/flat or out of range")
                 chord.append("-")
 
             else:
@@ -102,8 +106,6 @@ class Part:
                     event.note += offset
 
                 chord.append(to_letter(event))
-
-            clock_prev = clock
 
             try:
                 current_bar = (clock // self.tpb) // self.sig
@@ -121,7 +123,7 @@ class Part:
 
 
 class Lyre:
-    def __init__(self, fname, merge=True):
+    def __init__(self, fname: str, transpose: int = 0, merge: bool = True):
         self.midi = mido.MidiFile(fname)
         self.parts = []
 
@@ -130,9 +132,9 @@ class Lyre:
             self.midi.tracks = [mido.merge_tracks(self.midi.tracks)]
 
         for track in self.midi.tracks:
-            self.parts.append(Part(track, self.midi.ticks_per_beat))
+            self.parts.append(Part(track, self.midi.ticks_per_beat, transpose))
 
-    def export(self, adjust=False):
+    def export(self, adjust: bool = False) -> str:
         buf = []
 
         for index, part in enumerate(self.parts):
@@ -168,6 +170,13 @@ def main():
         action="store_true",
         help="adjust the octave of notes outside the range to be within C3-B5",
     )
+    parser.add_argument(
+        "-t",
+        "--transpose",
+        help="transpose the midi notes by a number of semitones",
+        type=int,
+        default=0,
+    )
 
     args = parser.parse_args()
 
@@ -177,7 +186,7 @@ def main():
     if args.debug:
         _log.setLevel(logging.DEBUG)
 
-    lyre = Lyre(args.midi_file, merge=not args.no_merge)
+    lyre = Lyre(args.midi_file, transpose=args.transpose, merge=not args.no_merge)
     export = lyre.export(adjust=args.adjust)
 
     if args.save_to:
